@@ -24,28 +24,47 @@
  */
 
 
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Scanner;
+
 public class Main {
     public static void main(String[] args) {
-        String inputStr = "Киселев Андрей Иванович m 04.10.1988 7925637273";
+        String test = "Иванов Иван Иванович m 01.01.2001 79200030003";
+        String inputStr = requestFromUser();
 
         try {
             InputConverter converter = new InputConverter(inputStr);
-            char gender = converter.findRemoveGender();
-            System.out.println("Пол: " + gender);
-            String birth = converter.findRemoveBirthdate();
-            System.out.println("Дата рождения: " + birth);
+            String gender = converter.findRemoveGender();
+            String birthdate = converter.findRemoveBirthdate();
             String telephone = converter.findRemoveTelephone();
-            System.out.println("Телефон: " + telephone);
             String fileName = converter.getFileName();
-            System.out.println("Имя файла: " + fileName);
-            String personFullName = converter.getPersonFullName();
-            System.out.println("ФИО: " + personFullName);
-
-        } catch (GenderNotCorrectException | QuantityInputException | BirthdateNotCorrectException |
-                 TelephoneNotCorrectException e) {
+            String secondName = converter.getSecondName();
+            String firstName = converter.getFirstName();
+            String lastName = converter.getLastName();
+            try (FileWriter fw = new FileWriter(fileName, true)) {
+                fw.write(String.format("<%s><%s><%s><%s><%s><%s>", secondName, firstName, lastName,
+                        birthdate, telephone, gender));
+                fw.write(System.lineSeparator());
+            } catch (IOException e) {
+                System.err.println("Ошибка записи в файл!");
+                System.out.println(Arrays.toString(e.getStackTrace()));
+            }
+        } catch (IncorrectEntryFromUserException e) {
             System.err.println(e.getMessage());
         }
-
     }
 
+    public static String requestFromUser() {
+        System.out.print("Введите данные в формате \"Фамилия Имя Отчество датарождения номертелефона пол\"" +
+                " через пробел.\n\tФорматы данных:\n    фамилия, имя, отчество - строки\n" +
+                "    дата_рождения - строка формата dd.mm.yyyy\n" +
+                "    номер_телефона - целое беззнаковое число без форматирования\n" +
+                "    пол - символ латиницей f или m\n>>> ");
+        Scanner scanner = new Scanner(System.in);
+        String result = scanner.nextLine();
+        scanner.close();
+        return result;
+    }
 }

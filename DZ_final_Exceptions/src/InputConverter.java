@@ -8,31 +8,39 @@ import java.util.List;
 public class InputConverter {
     private List<String> list;
 
-    public InputConverter(String inputStr) throws QuantityInputException {
-        String[] arr = inputStr.split(" ");
-        if (arr.length == 6) list = new ArrayList<>(Arrays.asList(arr));
-        else if (arr.length < 6) throw new QuantityInputException("Введенных данных не достаточно.");
-        else throw new QuantityInputException("Введено больше чем требуется");
+    public List<String> getList() {
+        return list;
     }
 
-    public Character findRemoveGender() throws GenderNotCorrectException {
-        char gender = ' ';
+    public InputConverter(String inputStr) throws IncorrectEntryFromUserException {
+        String[] arr = inputStr.split(" ");
+        for (String part : arr) {
+            if (part.isEmpty())
+                throw new IncorrectEntryFromUserException("Вводить данные необходимо через ОДИН пробел");
+        }
+        if (arr.length == 6) list = new ArrayList<>(Arrays.asList(arr));
+        else if (arr.length < 6) throw new IncorrectEntryFromUserException("Введенных данных недостаточно");
+        else throw new IncorrectEntryFromUserException("Введено больше чем требуется");
+    }
+
+    public String findRemoveGender() throws IncorrectEntryFromUserException {
+        String gender = " ";
         for (String part : this.list) {
             if (part.length() == 1) {
-                gender = part.charAt(0);
+                gender = part;
             }
         }
-        if (gender == 'm' || gender == 'f') {
-            list.remove(String.valueOf(gender));
+        if (gender.equalsIgnoreCase("m") || gender.equalsIgnoreCase("f")) {
+            list.remove(gender);
             return gender;
-        } else if (gender == ' ')
-            throw new GenderNotCorrectException("В качестве пола вводите не более 1 символа (f или m латиницей)");
+        } else if (gender.equals(" "))
+            throw new IncorrectEntryFromUserException("В качестве пола вводите не более 1 символа (f или m латиницей)");
         else
-            throw new GenderNotCorrectException("Вводите символ латиницей f или m (вы ввели в качестве пола символ \"" +
+            throw new IncorrectEntryFromUserException("Вводите символ латиницей f или m (вы ввели в качестве пола символ \"" +
                     gender + "\")");
     }
 
-    public String findRemoveBirthdate() throws BirthdateNotCorrectException {
+    public String findRemoveBirthdate() throws IncorrectEntryFromUserException {
         LocalDate birthDate = LocalDate.MAX;
         DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy");
         int index = 0;
@@ -42,7 +50,7 @@ public class InputConverter {
                 index = i;
             }
         }
-        if (birthDate == LocalDate.MAX) throw new BirthdateNotCorrectException("Некорректный ввод даты рождения. " +
+        if (birthDate == LocalDate.MAX) throw new IncorrectEntryFromUserException("Некорректный ввод даты рождения. " +
                 "Вводите в формате dd.MM.yyyy");
         else return list.remove(index);
     }
@@ -57,7 +65,7 @@ public class InputConverter {
         }
     }
 
-    public String findRemoveTelephone() throws TelephoneNotCorrectException {
+    public String findRemoveTelephone() throws IncorrectEntryFromUserException {
         long result = 0;
         int index = 0;
         for (int i = 0; i < list.size(); i++) {
@@ -66,7 +74,7 @@ public class InputConverter {
                 index = i;
             }
         }
-        if (result == 0) throw new TelephoneNotCorrectException("Телефонный номер во введенной строке не найден");
+        if (result == 0) throw new IncorrectEntryFromUserException("Телефонный номер во введенной строке не найден");
         else return list.remove(index);
 
 
@@ -76,17 +84,36 @@ public class InputConverter {
         try {
             Long.parseLong(s);
             return true;
-        }
-        catch (NumberFormatException e){
+        } catch (NumberFormatException e) {
             return false;
         }
     }
 
-    public String getFileName(){
+    public String getFileName() {
         return list.get(0) + ".txt";
     }
 
-    public String getPersonFullName(){
-        return list.get(0) + " " + list.get(1) + " " + list.get(2);
+    public String getSecondName() throws IncorrectEntryFromUserException {
+        for (int i = 0; i < list.get(0).length(); i++) {
+            if (!Character.isLetter(list.get(0).charAt(i)))
+                throw new IncorrectEntryFromUserException("Фамилия не может содержать цифры или спецсимволы!");
+        }
+        return list.get(0);
+    }
+
+    public String getFirstName() throws IncorrectEntryFromUserException {
+        for (int i = 0; i < list.get(1).length(); i++) {
+            if (!Character.isLetter(list.get(1).charAt(i)))
+                throw new IncorrectEntryFromUserException("Имя не может содержать цифры или спецсимволы!");
+        }
+        return list.get(1);
+    }
+
+    public String getLastName() throws IncorrectEntryFromUserException {
+        for (int i = 0; i < list.get(2).length(); i++) {
+            if (!Character.isLetter(list.get(2).charAt(i)))
+                throw new IncorrectEntryFromUserException("Отчество не может содержать цифры или спецсимволы!");
+        }
+        return list.get(2);
     }
 }
